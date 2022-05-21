@@ -19,17 +19,35 @@ struct ContentView: View {
             List {
                 Section {
                     TextField("enter your word", text: $newWord)
+                        .autocapitalization(.none)
                 }
                 
                 Section {
                     ForEach(usedWords, id: \.self) { word in
-                        Text(word)
+                        HStack {
+                            Image(systemName: "\(word.count).circle")
+                            Text(word)
+                        }
                     }
                 }
             }
             .navigationTitle(rootWord)
+            
+            .onSubmit(addNewWord)
         }
     }
+    
+    func addNewWord() {
+        let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard answer.count > 0 else { return }
+        
+        // Extra validation to come
+        withAnimation {
+        usedWords.insert(answer, at: 0)
+        }
+        newWord = ""
+    }
+    
 }
 
 struct ContentView_Previews: PreviewProvider {
