@@ -51,13 +51,19 @@ struct ContentView: View {
     }
     
     func startGame() {
+        // Find the URL for start.txt in bundle app
         if let startWordsURL = Bundle.main.url(forResource: "start", withExtension: "txt") {
+            // Load start.txt into a string
             if let startWords = try? String(contentsOf: startWordsURL) {
+               // Split the string up into a array of strings, split on line breaks
                 let allWords = startWords.components(separatedBy: "\n")
+                // Pick up random word or silkworm as sensible default
                 rootWord = allWords.randomElement() ?? "silkworm"
+               // if we are here everything has worked, so we can exit
                 return
             }
         }
+        //If we are here then we have a problem - trigger a crash and report error 
         fatalError("Could not load tart.txt from bundle")
 
     }
