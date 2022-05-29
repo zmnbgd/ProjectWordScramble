@@ -314,5 +314,51 @@ withAnimation {
 }
 
 
+Running code when our app launches
+
+
+
+When Xcode builds an iOS project, it puts your compiled program, your asset catalog, and any other assets into a single directory called a bundle, then gives that bundle the name YourAppName.app. This “.app” extension is automatically recognized by iOS and Apple’s other platforms, which is why if you double-click something like Notes.app on macOS it knows to launch the program inside the bundle.
+
+In our game, we’re going to include a file called “start.txt”, which includes over 10,000 eight-letter words that will be randomly selected for the player to work with.
+
+We already defined a property called rootWord, which will contain the word we want the player to spell from. What we need to do now is write a new method called startGame() that will:
+
+1. Find start.txt in our bundle
+2. Load it into a string
+3. Split that string into array of strings, with each element being one word
+4. Pick one random word from there to be assigned to rootWord, or use a sensible default if the array is empty.
+
+Each of those four tasks corresponds to one line of code, but there’s a twist: what if we can’t locate start.txt in our app bundle, or if we can locate it but we can’t load it? In that case we have a serious problem, because our app is really broken – either we forgot to include the file somehow (in which case our game won’t work), or we included it but for some reason iOS refused to let us read it (in which case our game won’t work, and our app is broken).
+
+Regardless of what caused it, this is a situation that never ought to happen, and Swift gives us a function called fatalError() that lets us respond to unresolvable problems really clearly. When we call fatalError() it will – unconditionally and always – cause our app to crash. It will just die. Not “might die” or “maybe die”: it will always just terminate straight away.
+
+I realize that sounds bad, but what it lets us do is important: for problems like this one, such as if we forget to include a file in our project, there is no point trying to make our app struggle on in a broken state. It’s much better to terminate immediately and give us a clear explanation of what went wrong so we can correct the problem, and that’s exactly what fatalError() does.
+
+Anyway, let’s take a look at the code – I’ve added comments matching the numbers above:
+
+func startGame() {
+    // 1. Find the URL for start.txt in our app bundle
+    if let startWordsURL = Bundle.main.url(forResource: "start", withExtension: "txt") {
+        // 2. Load start.txt into a string
+        if let startWords = try? String(contentsOf: startWordsURL) {
+            // 3. Split the string up into an array of strings, splitting on line breaks
+            let allWords = startWords.components(separatedBy: "\n")
+
+            // 4. Pick one random word, or use "silkworm" as a sensible default
+            rootWord = allWords.randomElement() ?? "silkworm"
+
+            // If we are here everything has worked, so we can exit
+            return
+        }
+    }
+
+    // If were are *here* then there was a problem – trigger a crash and report the error
+    fatalError("Could not load start.txt from bundle.")
+}
+
+Now that we have a method to load everything for the game, we need to actually call that thing when our view is shown. SwiftUI gives us a dedicated view modifier for running a closure when a view is shown, so we can use that to call startGame() and get things moving – add this modifier after onSubmit():
+
+.onAppear(perform: startGame)
 
 
